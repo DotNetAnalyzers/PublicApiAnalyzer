@@ -1,0 +1,20 @@
+# Build output
+bin/
+obj/
+
+# Artifacts of the IDE and build
+*.sln.ide/
+.vs/
+packages/
+*.suo
+*.user
+TestResults/
+OpenCover.Reports/
+.nuget/NuGet.exe
+build/nuget/
+*.log
+
+# Visual Studio performance tools
+*.psess
+*.vsp
+*.vspx
