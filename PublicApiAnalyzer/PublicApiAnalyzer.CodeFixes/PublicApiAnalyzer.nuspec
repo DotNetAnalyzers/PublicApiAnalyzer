@@ -1,0 +1,35 @@
+﻿<?xml version="1.0"?>
+<package>
+  <metadata minClientVersion="2.7">
+    <id>PublicApiAnalyzer</id>
+    <version>0.0.0</version>
+    <title>Public API Analyzer</title>
+    <authors>Sam Harwell et. al.</authors>
+    <owners>Sam Harwell</owners>
+    <licenseUrl>https://raw.githubusercontent.com/DotNetAnalyzers/PublicApiAnalyzer/$version$/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/DotNetAnalyzers/PublicApiAnalyzer</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>An analyzer for packages with public APIs.</description>
+    <releaseNotes>https://github.com/DotNetAnalyzers/PublicApiAnalyzer/releases/$version$</releaseNotes>
+    <copyright>Copyright Sam Harwell 2015</copyright>
+    <tags>API DotNetAnalyzers Roslyn Diagnostic Analyzer</tags>
+    <developmentDependency>true</developmentDependency>
+  </metadata>
+  <files>
+
+    <!-- Binaries and symbols -->
+    <file src="bin\$Configuration$\PublicApiAnalyzer.dll" target="analyzers\dotnet\cs" />
+    <file src="bin\$Configuration$\PublicApiAnalyzer.pdb" target="analyzers\dotnet\cs" />
+    <file src="bin\$Configuration$\PublicApiAnalyzer.CodeFixes.dll" target="analyzers\dotnet\cs" />
+    <file src="bin\$Configuration$\PublicApiAnalyzer.CodeFixes.pdb" target="analyzers\dotnet\cs" />
+
+    <!-- Scripts -->
+    <file src="tools\install.ps1" target="tools\" />
+    <file src="tools\uninstall.ps1" target="tools\" />
+
+    <!-- Source code -->
+    <file src="..\PublicApiAnalyzer\**\*.cs" exclude="..\PublicApiAnalyzer\obj\**\*.cs" target="src"/>
+    <file src="**\*.cs" exclude="obj\**\*.cs;Properties\AssemblyInfo.cs" target="src"/>
+
+  </files>
+</package>
