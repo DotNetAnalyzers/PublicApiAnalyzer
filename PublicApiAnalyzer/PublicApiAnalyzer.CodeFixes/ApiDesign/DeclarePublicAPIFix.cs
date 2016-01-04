@@ -45,7 +45,7 @@ namespace PublicApiAnalyzer.ApiDesign
 
                 context.RegisterCodeFix(
                     CodeAction.Create(
-                        $"Add {minimalSymbolName} to public API",
+                        $"Add '{minimalSymbolName}' to public API",
                         c => this.GetFixAsync(publicSurfaceAreaDocument, publicSurfaceAreaSymbolName, c),
                         nameof(DeclarePublicAPIFix)),
                     diagnostic);
