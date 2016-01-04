@@ -2,6 +2,8 @@
 
 [![Join the chat at https://gitter.im/DotNetAnalyzers/PublicApiAnalyzer](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/DotNetAnalyzers/PublicApiAnalyzer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+[![Build status](https://ci.appveyor.com/api/projects/status/27963rsy48aseywm/branch/master?svg=true)](https://ci.appveyor.com/project/sharwell/publicapianalyzer/branch/master)
+
 [![codecov.io](http://codecov.io/github/DotNetAnalyzers/PublicApiAnalyzer/coverage.svg?branch=master)](http://codecov.io/github/DotNetAnalyzers/PublicApiAnalyzer?branch=master)
 
 ## Using Public API Analyzer
