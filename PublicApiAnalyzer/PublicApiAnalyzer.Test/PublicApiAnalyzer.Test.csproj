@@ -109,6 +109,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApiDesign\DeclarePublicAPIAnalyzerTests.cs" />
     <Compile Include="AttributeTests.cs" />
     <Compile Include="ExclusionTests.cs" />
     <Compile Include="ExportCodeFixProviderAttributeNameTest.cs" />

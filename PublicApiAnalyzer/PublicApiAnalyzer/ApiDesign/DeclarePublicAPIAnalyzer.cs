@@ -33,7 +33,8 @@ namespace PublicApiAnalyzer.ApiDesign
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             description: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.DeclarePublicApiDescription), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
-            customTags: WellKnownDiagnosticTags.Telemetry);
+            helpLinkUri: $"https://github.com/DotNetAnalyzers/PublicApiAnalyzer/blob/master/documentation/{RoslynDiagnosticIds.DeclarePublicApiRuleId}.md",
+            customTags: new string[0]);
 
         internal static readonly DiagnosticDescriptor RemoveDeletedApiRule = new DiagnosticDescriptor(
             id: RoslynDiagnosticIds.RemoveDeletedApiRuleId,
@@ -43,7 +44,8 @@ namespace PublicApiAnalyzer.ApiDesign
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             description: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.RemoveDeletedApiDescription), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
-            customTags: WellKnownDiagnosticTags.Telemetry);
+            helpLinkUri: $"https://github.com/DotNetAnalyzers/PublicApiAnalyzer/blob/master/documentation/{RoslynDiagnosticIds.RemoveDeletedApiRuleId}.md",
+            customTags: new string[0]);
 
         internal static readonly DiagnosticDescriptor ExposedNoninstantiableType = new DiagnosticDescriptor(
             id: RoslynDiagnosticIds.ExposedNoninstantiableTypeRuleId,
@@ -53,7 +55,8 @@ namespace PublicApiAnalyzer.ApiDesign
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             description: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.ExposedNoninstantiableTypeDescription), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
-            customTags: WellKnownDiagnosticTags.Telemetry);
+            helpLinkUri: $"https://github.com/DotNetAnalyzers/PublicApiAnalyzer/blob/master/documentation/{RoslynDiagnosticIds.ExposedNoninstantiableTypeRuleId}.md",
+            customTags: new string[0]);
 
         internal static readonly DiagnosticDescriptor PublicApiFilesInvalid = new DiagnosticDescriptor(
             id: RoslynDiagnosticIds.PublicApiFilesInvalid,
@@ -62,7 +65,8 @@ namespace PublicApiAnalyzer.ApiDesign
             category: AnalyzerCategory.ApiDesign,
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
-            customTags: WellKnownDiagnosticTags.Telemetry);
+            helpLinkUri: $"https://github.com/DotNetAnalyzers/PublicApiAnalyzer/blob/master/documentation/{RoslynDiagnosticIds.PublicApiFilesInvalid}.md",
+            customTags: new string[0]);
 
         internal static readonly DiagnosticDescriptor DuplicateSymbolInApiFiles = new DiagnosticDescriptor(
             id: RoslynDiagnosticIds.DuplicatedSymbolInPublicApiFiles,
@@ -71,7 +75,8 @@ namespace PublicApiAnalyzer.ApiDesign
             category: AnalyzerCategory.ApiDesign,
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
-            customTags: WellKnownDiagnosticTags.Telemetry);
+            helpLinkUri: $"https://github.com/DotNetAnalyzers/PublicApiAnalyzer/blob/master/documentation/{RoslynDiagnosticIds.DuplicatedSymbolInPublicApiFiles}.md",
+            customTags: new string[0]);
 
         internal static readonly SymbolDisplayFormat ShortSymbolNameFormat =
             new SymbolDisplayFormat(

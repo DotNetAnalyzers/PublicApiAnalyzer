@@ -14,6 +14,7 @@ namespace TestHelper
     using Microsoft.CodeAnalysis.Diagnostics;
     using Microsoft.CodeAnalysis.Text;
     using PublicApiAnalyzer;
+    using PublicApiAnalyzer.ApiDesign;
     using PublicApiAnalyzer.Test.Helpers;
 
     /// <summary>
@@ -58,7 +59,7 @@ namespace TestHelper
                 var failureDiagnostics = allDiagnostics.Where(diagnostic => diagnostic.Id == "AD0001");
                 foreach (var diag in diags.Concat(compilerErrors).Concat(failureDiagnostics))
                 {
-                    if (diag.Location == Location.None || diag.Location.IsInMetadata)
+                    if (diag.Location == Location.None || !diag.Location.IsInSource)
                     {
                         diagnostics.Add(diag);
                     }
@@ -71,6 +72,7 @@ namespace TestHelper
                             if (tree == diag.Location.SourceTree)
                             {
                                 diagnostics.Add(diag);
+                                break;
                             }
                         }
                     }
@@ -121,11 +123,18 @@ namespace TestHelper
                 .AddMetadataReference(projectId, MetadataReferences.CSharpSymbolsReference)
                 .AddMetadataReference(projectId, MetadataReferences.CodeAnalysisReference);
 
-            var settings = this.GetSettings();
-            if (!string.IsNullOrEmpty(settings))
+            var publicApi = this.GetUnshippedPublicApi();
+            if (publicApi != null)
             {
                 var documentId = DocumentId.CreateNewId(projectId);
-                solution = solution.AddAdditionalDocument(documentId, SettingsHelper.PublicApiFileName, settings);
+                solution = solution.AddAdditionalDocument(documentId, DeclarePublicAPIAnalyzer.UnshippedFileName, publicApi);
+            }
+
+            publicApi = this.GetShippedPublicApi();
+            if (publicApi != null)
+            {
+                var documentId = DocumentId.CreateNewId(projectId);
+                solution = solution.AddAdditionalDocument(documentId, DeclarePublicAPIAnalyzer.ShippedFileName, publicApi);
             }
 
             ParseOptions parseOptions = solution.GetProject(projectId).ParseOptions;
@@ -145,7 +154,16 @@ namespace TestHelper
         /// Gets the content of the settings file to use.
         /// </summary>
         /// <returns>The contents of the settings file to use.</returns>
-        protected virtual string GetSettings()
+        protected virtual string GetUnshippedPublicApi()
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the content of the settings file to use.
+        /// </summary>
+        /// <returns>The contents of the settings file to use.</returns>
+        protected virtual string GetShippedPublicApi()
         {
             return null;
         }

@@ -43,8 +43,7 @@ namespace PublicApiAnalyzer.Test
 
             Assert.NotNull(exportCodeFixProviderAttribute);
             Assert.Equal(codeFixProvider.Name, exportCodeFixProviderAttribute.Name);
-            Assert.Equal(1, exportCodeFixProviderAttribute.Languages.Length);
-            Assert.Equal(LanguageNames.CSharp, exportCodeFixProviderAttribute.Languages[0]);
+            Assert.Contains(LanguageNames.CSharp, exportCodeFixProviderAttribute.Languages);
         }
     }
 }
