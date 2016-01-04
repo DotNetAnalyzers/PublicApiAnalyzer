@@ -4,10 +4,13 @@
 namespace PublicApiAnalyzer.Test.ApiDesign
 {
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.CodeAnalysis.CodeActions;
     using Microsoft.CodeAnalysis.CodeFixes;
     using Microsoft.CodeAnalysis.Diagnostics;
+    using Microsoft.CodeAnalysis.Text;
     using PublicApiAnalyzer.ApiDesign;
     using TestHelper;
     using Xunit;
@@ -31,6 +34,11 @@ public class C
 
             var expected = this.CSharpDiagnostic(DeclarePublicAPIAnalyzer.DeclareNewApiRule).WithArguments("C").WithLocation(2, 14);
             await this.VerifyCSharpDiagnosticAsync(source, expected, CancellationToken.None).ConfigureAwait(false);
+
+            string fixedApi = "C";
+            var updatedApi = await this.GetUpdatedApiAsync(source, 0, CancellationToken.None).ConfigureAwait(false);
+
+            Assert.Equal(fixedApi, updatedApi.ToString());
         }
 
         [Fact]
@@ -67,6 +75,26 @@ public class C
             };
 
             await this.VerifyCSharpDiagnosticAsync(source, expected, CancellationToken.None).ConfigureAwait(false);
+
+            string fixedApi = "C";
+            var updatedApi = await this.GetUpdatedApiAsync(source, 0, CancellationToken.None).ConfigureAwait(false);
+            Assert.Equal(fixedApi, updatedApi.ToString());
+
+            fixedApi = "C.Field -> int";
+            updatedApi = await this.GetUpdatedApiAsync(source, 1, CancellationToken.None).ConfigureAwait(false);
+            Assert.Equal(fixedApi, updatedApi.ToString());
+
+            fixedApi = "C.Property.get -> int";
+            updatedApi = await this.GetUpdatedApiAsync(source, 2, CancellationToken.None).ConfigureAwait(false);
+            Assert.Equal(fixedApi, updatedApi.ToString());
+
+            fixedApi = "C.Property.set -> void";
+            updatedApi = await this.GetUpdatedApiAsync(source, 3, CancellationToken.None).ConfigureAwait(false);
+            Assert.Equal(fixedApi, updatedApi.ToString());
+
+            fixedApi = "C.Method() -> void";
+            updatedApi = await this.GetUpdatedApiAsync(source, 4, CancellationToken.None).ConfigureAwait(false);
+            Assert.Equal(fixedApi, updatedApi.ToString());
         }
 
         [Fact]
@@ -274,6 +302,27 @@ C.Property.get -> int";
         protected override string GetUnshippedPublicApi()
         {
             return this.unshippedText;
+        }
+
+        private async Task<SourceText> GetUpdatedApiAsync(string source, int diagnosticIndex, CancellationToken cancellationToken)
+        {
+            var fixes = await this.GetOfferedCSharpFixesAsync(source, diagnosticIndex, cancellationToken).ConfigureAwait(false);
+            Assert.Equal(1, fixes.Item2.Length);
+
+            var operations = await fixes.Item2[0].GetOperationsAsync(CancellationToken.None).ConfigureAwait(false);
+            Assert.Equal(1, operations.Length);
+            ApplyChangesOperation operation = operations[0] as ApplyChangesOperation;
+            Assert.NotNull(operation);
+
+            var oldSolution = fixes.Item1;
+            var newSolution = operation.ChangedSolution;
+            var solutionChanges = newSolution.GetChanges(oldSolution);
+            var projectChanges = solutionChanges.GetProjectChanges().Single();
+            var changedDocumentId = projectChanges.GetChangedAdditionalDocuments().Single();
+            var newDocument = projectChanges.NewProject.GetAdditionalDocument(changedDocumentId);
+            var newText = await newDocument.GetTextAsync(CancellationToken.None).ConfigureAwait(false);
+
+            return newText;
         }
     }
 }
