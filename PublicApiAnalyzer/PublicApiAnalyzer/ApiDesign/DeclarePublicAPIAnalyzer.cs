@@ -27,48 +27,48 @@ namespace PublicApiAnalyzer.ApiDesign
 
         internal static readonly DiagnosticDescriptor DeclareNewApiRule = new DiagnosticDescriptor(
             id: RoslynDiagnosticIds.DeclarePublicApiRuleId,
-            title: RoslynDiagnosticsResources.DeclarePublicApiTitle,
-            messageFormat: RoslynDiagnosticsResources.DeclarePublicApiMessage,
-            category: "ApiDesign",
+            title: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.DeclarePublicApiTitle), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
+            messageFormat: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.DeclarePublicApiMessage), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
+            category: AnalyzerCategory.ApiDesign,
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
-            description: RoslynDiagnosticsResources.DeclarePublicApiDescription,
+            description: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.DeclarePublicApiDescription), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
             customTags: WellKnownDiagnosticTags.Telemetry);
 
         internal static readonly DiagnosticDescriptor RemoveDeletedApiRule = new DiagnosticDescriptor(
             id: RoslynDiagnosticIds.RemoveDeletedApiRuleId,
-            title: RoslynDiagnosticsResources.RemoveDeletedApiTitle,
-            messageFormat: RoslynDiagnosticsResources.RemoveDeletedApiMessage,
-            category: "ApiDesign",
+            title: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.RemoveDeletedApiTitle), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
+            messageFormat: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.RemoveDeletedApiMessage), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
+            category: AnalyzerCategory.ApiDesign,
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
-            description: RoslynDiagnosticsResources.RemoveDeletedApiDescription,
+            description: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.RemoveDeletedApiDescription), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
             customTags: WellKnownDiagnosticTags.Telemetry);
 
         internal static readonly DiagnosticDescriptor ExposedNoninstantiableType = new DiagnosticDescriptor(
             id: RoslynDiagnosticIds.ExposedNoninstantiableTypeRuleId,
-            title: RoslynDiagnosticsResources.ExposedNoninstantiableTypeTitle,
-            messageFormat: RoslynDiagnosticsResources.ExposedNoninstantiableTypeMessage,
-            category: "ApiDesign",
+            title: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.ExposedNoninstantiableTypeTitle), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
+            messageFormat: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.ExposedNoninstantiableTypeMessage), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
+            category: AnalyzerCategory.ApiDesign,
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
-            description: RoslynDiagnosticsResources.ExposedNoninstantiableTypeDescription,
+            description: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.ExposedNoninstantiableTypeDescription), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
             customTags: WellKnownDiagnosticTags.Telemetry);
 
         internal static readonly DiagnosticDescriptor PublicApiFilesInvalid = new DiagnosticDescriptor(
             id: RoslynDiagnosticIds.PublicApiFilesInvalid,
-            title: RoslynDiagnosticsResources.PublicApiFilesInvalidTitle,
-            messageFormat: RoslynDiagnosticsResources.PublicApiFilesInvalidMessage,
-            category: "ApiDesign",
+            title: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.PublicApiFilesInvalidTitle), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
+            messageFormat: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.PublicApiFilesInvalidMessage), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
+            category: AnalyzerCategory.ApiDesign,
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             customTags: WellKnownDiagnosticTags.Telemetry);
 
         internal static readonly DiagnosticDescriptor DuplicateSymbolInApiFiles = new DiagnosticDescriptor(
             id: RoslynDiagnosticIds.DuplicatedSymbolInPublicApiFiles,
-            title: RoslynDiagnosticsResources.DuplicateSymbolsInPublicApiFilesTitle,
-            messageFormat: RoslynDiagnosticsResources.DuplicateSymbolsInPublicApiFilesMessage,
-            category: "ApiDesign",
+            title: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.DuplicateSymbolsInPublicApiFilesTitle), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
+            messageFormat: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.DuplicateSymbolsInPublicApiFilesMessage), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
+            category: AnalyzerCategory.ApiDesign,
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             customTags: WellKnownDiagnosticTags.Telemetry);
