@@ -47,6 +47,7 @@
     <DefineConstants>$(DefineConstants);DEVELOPMENT_KEY</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ApiDesign\DeclarePublicAPIFix.cs" />
     <Compile Include="Helpers\CustomBatchFixAllProvider.cs" />
     <Compile Include="Helpers\CustomFixAllProviders.cs" />
     <Compile Include="Helpers\DocumentBasedFixAllProvider.cs" />

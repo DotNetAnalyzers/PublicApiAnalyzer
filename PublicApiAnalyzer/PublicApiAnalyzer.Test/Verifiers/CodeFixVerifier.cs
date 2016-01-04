@@ -150,7 +150,7 @@ namespace TestHelper
         /// <param name="diagnosticIndex">Index determining which diagnostic to use for determining the offered code fixes. Uses the first diagnostic if null.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
         /// <returns>The collection of offered code actions. This collection may be empty.</returns>
-        protected async Task<ImmutableArray<CodeAction>> GetOfferedCSharpFixesAsync(string source, int? diagnosticIndex = null, CancellationToken cancellationToken = default(CancellationToken))
+        protected async Task<Tuple<Solution, ImmutableArray<CodeAction>>> GetOfferedCSharpFixesAsync(string source, int? diagnosticIndex = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             return await this.GetOfferedFixesInternalAsync(LanguageNames.CSharp, source, diagnosticIndex, this.GetCSharpDiagnosticAnalyzers().ToImmutableArray(), this.GetCSharpCodeFixProvider(), cancellationToken).ConfigureAwait(false);
         }
@@ -401,7 +401,7 @@ namespace TestHelper
             Assert.Equal(newSource, actual);
         }
 
-        private async Task<ImmutableArray<CodeAction>> GetOfferedFixesInternalAsync(string language, string source, int? diagnosticIndex, ImmutableArray<DiagnosticAnalyzer> analyzers, CodeFixProvider codeFixProvider, CancellationToken cancellationToken)
+        private async Task<Tuple<Solution, ImmutableArray<CodeAction>>> GetOfferedFixesInternalAsync(string language, string source, int? diagnosticIndex, ImmutableArray<DiagnosticAnalyzer> analyzers, CodeFixProvider codeFixProvider, CancellationToken cancellationToken)
         {
             var document = this.CreateDocument(source, language);
             var analyzerDiagnostics = await GetSortedDiagnosticsFromDocumentsAsync(analyzers, new[] { document }, cancellationToken).ConfigureAwait(false);
@@ -419,7 +419,7 @@ namespace TestHelper
                 await codeFixProvider.RegisterCodeFixesAsync(context).ConfigureAwait(false);
             }
 
-            return actions.ToImmutableArray();
+            return Tuple.Create(document.Project.Solution, actions.ToImmutableArray());
         }
     }
 }
