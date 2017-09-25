@@ -24,6 +24,6 @@ namespace PublicApiAnalyzer.Helpers
         Internal,
 
         /// <summary>Public access.</summary>
-        Public
+        Public,
     }
 }

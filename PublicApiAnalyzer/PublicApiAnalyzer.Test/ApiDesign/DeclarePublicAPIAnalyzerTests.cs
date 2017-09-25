@@ -71,7 +71,7 @@ public class C
                 this.CSharpDiagnostic(DeclarePublicAPIAnalyzer.DeclareNewApiRule).WithArguments("Property.set").WithLocation(5, 32),
 
                 // Test0.cs(6,17): error RS0016: Symbol 'Method' is not part of the declared API.
-                this.CSharpDiagnostic(DeclarePublicAPIAnalyzer.DeclareNewApiRule).WithArguments("Method").WithLocation(6, 17)
+                this.CSharpDiagnostic(DeclarePublicAPIAnalyzer.DeclareNewApiRule).WithArguments("Method").WithLocation(6, 17),
             };
 
             await this.VerifyCSharpDiagnosticAsync(source, expected, CancellationToken.None).ConfigureAwait(false);
