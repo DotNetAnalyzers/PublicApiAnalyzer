@@ -7,6 +7,7 @@ namespace PublicApiAnalyzer.ApiDesign
     using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.Composition;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace PublicApiAnalyzer.ApiDesign
 
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic, Name = "DeclarePublicAPIFix")]
     [Shared]
-    internal class DeclarePublicAPIFix : CodeFixProvider
+    internal sealed class DeclarePublicAPIFix : CodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } =
             ImmutableArray.Create(RoslynDiagnosticIds.DeclarePublicApiRuleId);
@@ -42,12 +43,14 @@ namespace PublicApiAnalyzer.ApiDesign
             {
                 string minimalSymbolName = diagnostic.Properties[DeclarePublicAPIAnalyzer.MinimalNamePropertyBagKey];
                 string publicSurfaceAreaSymbolName = diagnostic.Properties[DeclarePublicAPIAnalyzer.PublicApiNamePropertyBagKey];
+                ImmutableHashSet<string> siblingSymbolNamesToRemove = diagnostic.Properties[DeclarePublicAPIAnalyzer.PublicApiNamesOfSiblingsToRemovePropertyBagKey]
+                    .Split(DeclarePublicAPIAnalyzer.PublicApiNamesOfSiblingsToRemovePropertyBagValueSeparator.ToCharArray())
+                    .ToImmutableHashSet();
 
                 context.RegisterCodeFix(
-                    CodeAction.Create(
-                        $"Add '{minimalSymbolName}' to public API",
-                        c => this.GetFixAsync(publicSurfaceAreaDocument, publicSurfaceAreaSymbolName, c),
-                        nameof(DeclarePublicAPIFix)),
+                    new AdditionalDocumentChangeAction(
+                        $"Add {minimalSymbolName} to public API",
+                        c => this.GetFixAsync(publicSurfaceAreaDocument, publicSurfaceAreaSymbolName, siblingSymbolNamesToRemove, c)),
                     diagnostic);
             }
         }
@@ -61,14 +64,30 @@ namespace PublicApiAnalyzer.ApiDesign
         {
             HashSet<string> lines = GetLinesFromSourceText(sourceText);
 
-            foreach (var name in newSymbolNames)
+            foreach (string name in newSymbolNames)
             {
                 lines.Add(name);
             }
 
             var sortedLines = lines.OrderBy(s => s, StringComparer.Ordinal);
 
-            var newSourceText = sourceText.Replace(new TextSpan(0, sourceText.Length), string.Join(Environment.NewLine, sortedLines));
+            var newSourceText = sourceText.Replace(new TextSpan(0, sourceText.Length), string.Join(Environment.NewLine, sortedLines) + GetEndOfFileText(sourceText));
+            return newSourceText;
+        }
+
+        private static SourceText RemoveSymbolNamesFromSourceText(SourceText sourceText, ImmutableHashSet<string> linesToRemove)
+        {
+            if (linesToRemove.IsEmpty)
+            {
+                return sourceText;
+            }
+
+            var lines = GetLinesFromSourceText(sourceText);
+            var newLines = lines.Where(line => !linesToRemove.Contains(line));
+
+            var sortedLines = newLines.OrderBy(s => s, StringComparer.Ordinal);
+
+            var newSourceText = sourceText.Replace(new TextSpan(0, sourceText.Length), string.Join(Environment.NewLine, sortedLines) + GetEndOfFileText(sourceText));
             return newSourceText;
         }
 
@@ -78,7 +97,7 @@ namespace PublicApiAnalyzer.ApiDesign
 
             foreach (var textLine in sourceText.Lines)
             {
-                var text = textLine.ToString();
+                string text = textLine.ToString();
                 if (!string.IsNullOrWhiteSpace(text))
                 {
                     lines.Add(text);
@@ -88,28 +107,28 @@ namespace PublicApiAnalyzer.ApiDesign
             return lines;
         }
 
-        private static ISymbol FindDeclaration(SyntaxNode root, Location location, SemanticModel semanticModel, CancellationToken cancellationToken)
+        /// <summary>
+        /// Returns the trailing newline from the end of <paramref name="sourceText"/>, if one exists.
+        /// </summary>
+        /// <param name="sourceText">The source text.</param>
+        /// <returns><see cref="Environment.NewLine"/> if <paramref name="sourceText"/> ends with a trailing newline;
+        /// otherwise, <see cref="string.Empty"/>.</returns>
+        private static string GetEndOfFileText(SourceText sourceText)
         {
-            var node = root.FindNode(location.SourceSpan);
-            ISymbol symbol = null;
-            while (node != null)
+            if (sourceText.Length == 0)
             {
-                symbol = semanticModel.GetDeclaredSymbol(node, cancellationToken);
-                if (symbol != null)
-                {
-                    break;
-                }
-
-                node = node.Parent;
+                return string.Empty;
             }
 
-            return symbol;
+            var lastLine = sourceText.Lines[sourceText.Lines.Count - 1];
+            return lastLine.Span.IsEmpty ? Environment.NewLine : string.Empty;
         }
 
-        private async Task<Solution> GetFixAsync(TextDocument publicSurfaceAreaDocument, string newSymbolName, CancellationToken cancellationToken)
+        private async Task<Solution> GetFixAsync(TextDocument publicSurfaceAreaDocument, string newSymbolName, ImmutableHashSet<string> siblingSymbolNamesToRemove, CancellationToken cancellationToken)
         {
             var sourceText = await publicSurfaceAreaDocument.GetTextAsync(cancellationToken).ConfigureAwait(false);
             var newSourceText = AddSymbolNamesToSourceText(sourceText, new[] { newSymbolName });
+            newSourceText = RemoveSymbolNamesFromSourceText(newSourceText, siblingSymbolNamesToRemove);
 
             return publicSurfaceAreaDocument.Project.Solution.WithAdditionalDocumentText(publicSurfaceAreaDocument.Id, newSourceText);
         }
@@ -125,6 +144,8 @@ namespace PublicApiAnalyzer.ApiDesign
             }
 
             public override string Title { get; }
+
+            public override string EquivalenceKey => this.Title;
 
             protected override Task<Solution> GetChangedSolutionAsync(CancellationToken cancellationToken)
             {
@@ -170,6 +191,7 @@ namespace PublicApiAnalyzer.ApiDesign
                             .GroupBy(d => d.Location.SourceTree);
 
                     var newSymbolNames = new List<string>();
+                    var symbolNamesToRemoveBuilder = ImmutableHashSet.CreateBuilder<string>();
 
                     foreach (var grouping in groupedDiagnostics)
                     {
@@ -188,10 +210,26 @@ namespace PublicApiAnalyzer.ApiDesign
                             string publicSurfaceAreaSymbolName = diagnostic.Properties[DeclarePublicAPIAnalyzer.PublicApiNamePropertyBagKey];
 
                             newSymbolNames.Add(publicSurfaceAreaSymbolName);
+
+                            string siblingNamesToRemove = diagnostic.Properties[DeclarePublicAPIAnalyzer.PublicApiNamesOfSiblingsToRemovePropertyBagKey];
+                            if (siblingNamesToRemove.Length > 0)
+                            {
+                                var namesToRemove = siblingNamesToRemove.Split(DeclarePublicAPIAnalyzer.PublicApiNamesOfSiblingsToRemovePropertyBagValueSeparator.ToCharArray());
+                                foreach (var nameToRemove in namesToRemove)
+                                {
+                                    symbolNamesToRemoveBuilder.Add(nameToRemove);
+                                }
+                            }
                         }
                     }
 
+                    var symbolNamesToRemove = symbolNamesToRemoveBuilder.ToImmutable();
+
+                    // We shouldn't be attempting to remove any symbol name, while also adding it.
+                    Debug.Assert(newSymbolNames.All(newSymbolName => !symbolNamesToRemove.Contains(newSymbolName)), "Assertion failed: newSymbolNames.All(newSymbolName => !symbolNamesToRemove.Contains(newSymbolName))");
+
                     var newSourceText = AddSymbolNamesToSourceText(sourceText, newSymbolNames);
+                    newSourceText = RemoveSymbolNamesFromSourceText(newSourceText, symbolNamesToRemove);
 
                     updatedPublicSurfaceAreaText.Add(new KeyValuePair<DocumentId, SourceText>(publicSurfaceAreaAdditionalDocument.Id, newSourceText));
                 }
@@ -228,7 +266,7 @@ namespace PublicApiAnalyzer.ApiDesign
                 case FixAllScope.Project:
                     {
                         var project = fixAllContext.Project;
-                        ImmutableArray<Diagnostic> diagnostics = await fixAllContext.GetAllDiagnosticsAsync(project).ConfigureAwait(false);
+                        var diagnostics = await fixAllContext.GetAllDiagnosticsAsync(project).ConfigureAwait(false);
                         diagnosticsToFix.Add(new KeyValuePair<Project, ImmutableArray<Diagnostic>>(fixAllContext.Project, diagnostics));
                         title = string.Format(titleFormat, "project", fixAllContext.Project.Name);
                         break;
@@ -238,7 +276,7 @@ namespace PublicApiAnalyzer.ApiDesign
                     {
                         foreach (var project in fixAllContext.Solution.Projects)
                         {
-                            ImmutableArray<Diagnostic> diagnostics = await fixAllContext.GetAllDiagnosticsAsync(project).ConfigureAwait(false);
+                            var diagnostics = await fixAllContext.GetAllDiagnosticsAsync(project).ConfigureAwait(false);
                             diagnosticsToFix.Add(new KeyValuePair<Project, ImmutableArray<Diagnostic>>(project, diagnostics));
                         }
 

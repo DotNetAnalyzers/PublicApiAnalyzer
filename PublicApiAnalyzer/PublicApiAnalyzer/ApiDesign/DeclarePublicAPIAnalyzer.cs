@@ -22,6 +22,8 @@ namespace PublicApiAnalyzer.ApiDesign
         internal const string UnshippedFileName = "PublicAPI.Unshipped.txt";
         internal const string PublicApiNamePropertyBagKey = "PublicAPIName";
         internal const string MinimalNamePropertyBagKey = "MinimalName";
+        internal const string PublicApiNamesOfSiblingsToRemovePropertyBagKey = "PublicApiNamesOfSiblingsToRemove";
+        internal const string PublicApiNamesOfSiblingsToRemovePropertyBagValueSeparator = ";;";
         internal const string RemovedApiPrefix = "*REMOVED*";
         internal const string InvalidReasonShippedCantHaveRemoved = "The shipped API file can't have removed members";
 
@@ -78,6 +80,26 @@ namespace PublicApiAnalyzer.ApiDesign
             helpLinkUri: $"https://github.com/DotNetAnalyzers/PublicApiAnalyzer/blob/master/documentation/{RoslynDiagnosticIds.DuplicatedSymbolInPublicApiFiles}.md",
             customTags: new string[0]);
 
+        internal static readonly DiagnosticDescriptor AvoidMultipleOverloadsWithOptionalParameters = new DiagnosticDescriptor(
+            id: RoslynDiagnosticIds.AvoidMultipleOverloadsWithOptionalParameters,
+            title: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.AvoidMultipleOverloadsWithOptionalParametersTitle), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
+            messageFormat: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.AvoidMultipleOverloadsWithOptionalParametersMessage), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
+            category: AnalyzerCategory.ApiDesign,
+            defaultSeverity: DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            helpLinkUri: $"https://github.com/DotNetAnalyzers/PublicApiAnalyzer/blob/master/documentation/{RoslynDiagnosticIds.AvoidMultipleOverloadsWithOptionalParameters}.md",
+            customTags: new string[0]);
+
+        internal static readonly DiagnosticDescriptor OverloadWithOptionalParametersShouldHaveMostParameters = new DiagnosticDescriptor(
+            id: RoslynDiagnosticIds.OverloadWithOptionalParametersShouldHaveMostParameters,
+            title: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.OverloadWithOptionalParametersShouldHaveMostParametersTitle), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
+            messageFormat: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.OverloadWithOptionalParametersShouldHaveMostParametersMessage), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
+            category: AnalyzerCategory.ApiDesign,
+            defaultSeverity: DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            helpLinkUri: $"https://github.com/DotNetAnalyzers/PublicApiAnalyzer/blob/master/documentation/{RoslynDiagnosticIds.OverloadWithOptionalParametersShouldHaveMostParameters}.md",
+            customTags: new string[0]);
+
         internal static readonly SymbolDisplayFormat ShortSymbolNameFormat =
             new SymbolDisplayFormat(
                 globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.OmittedAsContaining,
@@ -98,60 +120,44 @@ namespace PublicApiAnalyzer.ApiDesign
                 parameterOptions: SymbolDisplayParameterOptions.IncludeExtensionThis | SymbolDisplayParameterOptions.IncludeParamsRefOut | SymbolDisplayParameterOptions.IncludeType | SymbolDisplayParameterOptions.IncludeName | SymbolDisplayParameterOptions.IncludeDefaultValue,
                 miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DeclareNewApiRule, RemoveDeletedApiRule, ExposedNoninstantiableType, PublicApiFilesInvalid, DuplicateSymbolInApiFiles);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+            ImmutableArray.Create(
+                DeclareNewApiRule,
+                RemoveDeletedApiRule,
+                ExposedNoninstantiableType,
+                PublicApiFilesInvalid,
+                DuplicateSymbolInApiFiles,
+                AvoidMultipleOverloadsWithOptionalParameters,
+                OverloadWithOptionalParametersShouldHaveMostParameters);
 
         public override void Initialize(AnalysisContext context)
         {
+            // TODO: Make the analyzer thread-safe.
+            ////context.EnableConcurrentExecution();
+
+            // Analyzer needs to get callbacks for generated code, and might report diagnostics in generated code.
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+
             context.RegisterCompilationStartAction(this.OnCompilationStart);
         }
 
-        internal static string GetPublicApiName(ISymbol symbol)
-        {
-            var publicApiName = symbol.ToDisplayString(PublicApiFormat);
-
-            ITypeSymbol memberType = null;
-            if (symbol is IMethodSymbol)
-            {
-                memberType = ((IMethodSymbol)symbol).ReturnType;
-            }
-            else if (symbol is IPropertySymbol)
-            {
-                memberType = ((IPropertySymbol)symbol).Type;
-            }
-            else if (symbol is IEventSymbol)
-            {
-                memberType = ((IEventSymbol)symbol).Type;
-            }
-            else if (symbol is IFieldSymbol)
-            {
-                memberType = ((IFieldSymbol)symbol).Type;
-            }
-
-            if (memberType != null)
-            {
-                publicApiName = publicApiName + " -> " + memberType.ToDisplayString(PublicApiFormat);
-            }
-
-            return publicApiName;
-        }
-
-        private static ApiData ReadApiData(string path, SourceText sourceText)
+        private static ApiData ReadApiData(string path, SourceText sourceText, bool isShippedApi)
         {
             var apiBuilder = ImmutableArray.CreateBuilder<ApiLine>();
             var removedBuilder = ImmutableArray.CreateBuilder<RemovedApiLine>();
 
             foreach (var line in sourceText.Lines)
             {
-                var text = line.ToString();
+                string text = line.ToString();
                 if (string.IsNullOrWhiteSpace(text))
                 {
                     continue;
                 }
 
-                var apiLine = new ApiLine(text, line.Span, sourceText, path);
+                var apiLine = new ApiLine(text, line.Span, sourceText, path, isShippedApi);
                 if (text.StartsWith(RemovedApiPrefix, StringComparison.Ordinal))
                 {
-                    var removedtext = text.Substring(RemovedApiPrefix.Length);
+                    string removedtext = text.Substring(RemovedApiPrefix.Length);
                     removedBuilder.Add(new RemovedApiLine(removedtext, apiLine));
                 }
                 else
@@ -165,17 +171,15 @@ namespace PublicApiAnalyzer.ApiDesign
 
         private static bool TryGetApiData(ImmutableArray<AdditionalText> additionalTexts, CancellationToken cancellationToken, out ApiData shippedData, out ApiData unshippedData)
         {
-            AdditionalText shippedText;
-            AdditionalText unshippedText;
-            if (!TryGetApiText(additionalTexts, cancellationToken, out shippedText, out unshippedText))
+            if (!TryGetApiText(additionalTexts, cancellationToken, out AdditionalText shippedText, out AdditionalText unshippedText))
             {
-                shippedData = default(ApiData);
-                unshippedData = default(ApiData);
+                shippedData = default;
+                unshippedData = default;
                 return false;
             }
 
-            shippedData = ReadApiData(ShippedFileName, shippedText.GetText(cancellationToken));
-            unshippedData = ReadApiData(UnshippedFileName, unshippedText.GetText(cancellationToken));
+            shippedData = ReadApiData(shippedText.Path, shippedText.GetText(cancellationToken), isShippedApi: true);
+            unshippedData = ReadApiData(unshippedText.Path, unshippedText.GetText(cancellationToken), isShippedApi: false);
             return true;
         }
 
@@ -189,7 +193,7 @@ namespace PublicApiAnalyzer.ApiDesign
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var fileName = Path.GetFileName(text.Path);
+                string fileName = Path.GetFileName(text.Path);
                 if (comparer.Equals(fileName, ShippedFileName))
                 {
                     shippedText = text;
@@ -210,8 +214,7 @@ namespace PublicApiAnalyzer.ApiDesign
         {
             foreach (var cur in apiList)
             {
-                ApiLine existingLine;
-                if (publicApiMap.TryGetValue(cur.Text, out existingLine))
+                if (publicApiMap.TryGetValue(cur.Text, out ApiLine existingLine))
                 {
                     var existingLinePositionSpan = existingLine.SourceText.Lines.GetLinePositionSpan(existingLine.Span);
                     var existingLocation = Location.Create(existingLine.Path, existingLine.Span, existingLinePositionSpan);
@@ -231,15 +234,12 @@ namespace PublicApiAnalyzer.ApiDesign
         {
             var additionalFiles = compilationContext.Options.AdditionalFiles;
 
-            ApiData shippedData;
-            ApiData unshippedData;
-            if (!TryGetApiData(additionalFiles, compilationContext.CancellationToken, out shippedData, out unshippedData))
+            if (!TryGetApiData(additionalFiles, compilationContext.CancellationToken, out ApiData shippedData, out ApiData unshippedData))
             {
                 return;
             }
 
-            List<Diagnostic> errors;
-            if (!this.ValidateApiFiles(shippedData, unshippedData, out errors))
+            if (!this.ValidateApiFiles(shippedData, unshippedData, out List<Diagnostic> errors))
             {
                 compilationContext.RegisterCompilationEndAction(context =>
                 {
@@ -252,7 +252,7 @@ namespace PublicApiAnalyzer.ApiDesign
                 return;
             }
 
-            var impl = new Impl(shippedData, unshippedData);
+            var impl = new Impl(compilationContext.Compilation, shippedData, unshippedData);
             compilationContext.RegisterSymbolAction(
                 impl.OnSymbolAction,
                 SymbolKind.NamedType,

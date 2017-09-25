@@ -127,14 +127,14 @@ namespace TestHelper
             if (publicApi != null)
             {
                 var documentId = DocumentId.CreateNewId(projectId);
-                solution = solution.AddAdditionalDocument(documentId, DeclarePublicAPIAnalyzer.UnshippedFileName, publicApi);
+                solution = solution.AddAdditionalDocument(documentId, DeclarePublicAPIAnalyzer.UnshippedFileName, publicApi, filePath: this.GetUnshippedPublicApiFilePath());
             }
 
             publicApi = this.GetShippedPublicApi();
             if (publicApi != null)
             {
                 var documentId = DocumentId.CreateNewId(projectId);
-                solution = solution.AddAdditionalDocument(documentId, DeclarePublicAPIAnalyzer.ShippedFileName, publicApi);
+                solution = solution.AddAdditionalDocument(documentId, DeclarePublicAPIAnalyzer.ShippedFileName, publicApi, filePath: this.GetShippedPublicApiFilePath());
             }
 
             ParseOptions parseOptions = solution.GetProject(projectId).ParseOptions;
@@ -159,11 +159,21 @@ namespace TestHelper
             return null;
         }
 
+        protected virtual string GetUnshippedPublicApiFilePath()
+        {
+            return null;
+        }
+
         /// <summary>
         /// Gets the content of the settings file to use.
         /// </summary>
         /// <returns>The contents of the settings file to use.</returns>
         protected virtual string GetShippedPublicApi()
+        {
+            return null;
+        }
+
+        protected virtual string GetShippedPublicApiFilePath()
         {
             return null;
         }
