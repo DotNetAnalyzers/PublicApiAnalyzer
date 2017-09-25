@@ -90,7 +90,7 @@ namespace PublicApiAnalyzer.Test.HelperTests
             new object[] { "\t   ", 2, 4, 4 },
 
             // tab followed by 4 spaces
-            new object[] { "\t    ", 2, 4, 4 }
+            new object[] { "\t    ", 2, 4, 4 },
         };
 
         private const string TestProjectName = "TestProject";

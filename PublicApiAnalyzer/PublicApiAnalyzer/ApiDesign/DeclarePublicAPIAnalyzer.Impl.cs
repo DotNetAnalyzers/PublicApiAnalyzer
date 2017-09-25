@@ -64,7 +64,7 @@ namespace PublicApiAnalyzer.ApiDesign
             private static readonly HashSet<MethodKind> IgnorableMethodKinds = new HashSet<MethodKind>
             {
                 MethodKind.EventAdd,
-                MethodKind.EventRemove
+                MethodKind.EventRemove,
             };
 
             private readonly ApiData unshippedData;
