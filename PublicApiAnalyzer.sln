@@ -1,18 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PublicApiAnalyzer", "PublicApiAnalyzer\PublicApiAnalyzer\PublicApiAnalyzer.csproj", "{627985B3-0CF1-4BD4-AE60-E54214B8563C}"
+# Visual Studio 15
+VisualStudioVersion = 15.0.26906.1
+MinimumVisualStudioVersion = 15.0
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PublicApiAnalyzer", "PublicApiAnalyzer\PublicApiAnalyzer\PublicApiAnalyzer.csproj", "{627985B3-0CF1-4BD4-AE60-E54214B8563C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{A3ABF729-C055-4ED6-B72C-75ADB618D14A}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PublicApiAnalyzer.Test", "PublicApiAnalyzer\PublicApiAnalyzer.Test\PublicApiAnalyzer.Test.csproj", "{C489533B-81AA-4240-9B55-B0CF0054B9E9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PublicApiAnalyzer.Test", "PublicApiAnalyzer\PublicApiAnalyzer.Test\PublicApiAnalyzer.Test.csproj", "{C489533B-81AA-4240-9B55-B0CF0054B9E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PublicApiAnalyzer.Vsix", "PublicApiAnalyzer\PublicApiAnalyzer.Vsix\PublicApiAnalyzer.Vsix.csproj", "{B6281E4F-86D6-4526-9BA9-357CCF7B77B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PublicApiAnalyzer.Vsix", "PublicApiAnalyzer\PublicApiAnalyzer.Vsix\PublicApiAnalyzer.Vsix.csproj", "{B6281E4F-86D6-4526-9BA9-357CCF7B77B9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{518166A7-F023-490D-B092-FEF1447EBC3B}"
 	ProjectSection(SolutionItems) = preProject
@@ -26,6 +26,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{7B1E5C00
 	ProjectSection(SolutionItems) = preProject
 		build\build.ps1 = build\build.ps1
 		build\check-key.ps1 = build\check-key.ps1
+		PublicApiAnalyzer\Directory.Build.props = PublicApiAnalyzer\Directory.Build.props
+		PublicApiAnalyzer\Directory.Build.targets = PublicApiAnalyzer\Directory.Build.targets
 		build\keys.ps1 = build\keys.ps1
 		build\opencover-report.ps1 = build\opencover-report.ps1
 		build\push.ps1 = build\push.ps1
@@ -34,7 +36,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{7B1E5C00
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "documentation", "documentation", "{443032E9-3E95-4023-8E4B-51825BB94EE7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PublicApiAnalyzer.CodeFixes", "PublicApiAnalyzer\PublicApiAnalyzer.CodeFixes\PublicApiAnalyzer.CodeFixes.csproj", "{8974DAEA-DD04-44B4-86A2-B430D066E9A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PublicApiAnalyzer.CodeFixes", "PublicApiAnalyzer\PublicApiAnalyzer.CodeFixes\PublicApiAnalyzer.CodeFixes.csproj", "{8974DAEA-DD04-44B4-86A2-B430D066E9A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,5 +63,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F897640F-51AE-4982-B0D2-FB5F255A8549}
 	EndGlobalSection
 EndGlobal

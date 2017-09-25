@@ -18,10 +18,12 @@
   <files>
 
     <!-- Binaries and symbols -->
-    <file src="bin\$Configuration$\PublicApiAnalyzer.dll" target="analyzers\dotnet\cs" />
-    <file src="bin\$Configuration$\PublicApiAnalyzer.pdb" target="analyzers\dotnet\cs" />
-    <file src="bin\$Configuration$\PublicApiAnalyzer.CodeFixes.dll" target="analyzers\dotnet\cs" />
-    <file src="bin\$Configuration$\PublicApiAnalyzer.CodeFixes.pdb" target="analyzers\dotnet\cs" />
+    <file src="bin\$Configuration$\netstandard1.1\PublicApiAnalyzer.dll" target="analyzers\dotnet\cs" />
+    <file src="bin\$Configuration$\netstandard1.1\**\PublicApiAnalyzer.resources.dll" target="analyzers\dotnet\cs" />
+    <file src="bin\$Configuration$\netstandard1.1\PublicApiAnalyzer.pdb" target="analyzers\dotnet\cs" />
+    <file src="bin\$Configuration$\netstandard1.1\PublicApiAnalyzer.CodeFixes.dll" target="analyzers\dotnet\cs" />
+    <file src="bin\$Configuration$\netstandard1.1\**\PublicApiAnalyzer.CodeFixes.resources.dll" target="analyzers\dotnet\cs" />
+    <file src="bin\$Configuration$\netstandard1.1\PublicApiAnalyzer.CodeFixes.pdb" target="analyzers\dotnet\cs" />
 
     <!-- Scripts -->
     <file src="tools\install.ps1" target="tools\" />

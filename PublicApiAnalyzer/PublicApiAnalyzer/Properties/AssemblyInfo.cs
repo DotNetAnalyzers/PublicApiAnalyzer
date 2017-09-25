@@ -3,41 +3,20 @@
 
 using System;
 using System.Reflection;
-using System.Resources;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("PublicApiAnalyzer")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Tunnel Vision Laboratories, LLC")]
-[assembly: AssemblyProduct("Public API Analyzer")]
-[assembly: AssemblyCopyright("Copyright © Sam Harwell 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: CLSCompliant(false)]
-[assembly: NeutralResourcesLanguage("en-US")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from
 // COM, set the ComVisible attribute to true on that type.
 [assembly: ComVisible(false)]
-
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version
-//      Build Number
-//      Revision
-//
-// You can specify all the values or you can default the Build and Revision Numbers
-// by using the '*' as shown below:
-[assembly: AssemblyVersion("1.0.0.1")]
-[assembly: AssemblyFileVersion("1.0.0.1")]
-[assembly: AssemblyInformationalVersion("1.0.0-dev")]
 
 #if DEVELOPMENT_KEY
 [assembly: InternalsVisibleTo("PublicApiAnalyzer.CodeFixes, PublicKey=00240000048000009400000006020000002400005253413100040000010001006b4f7413340c619a8d40711b6d977d6dbfb1ab7d7c41aed30d385f4e4c40fd52319b9150eca37207c6e9dfe5bed9876aec9d6b592c17529e56b0ca9119efe4a14797fed920955a01186229599f1374f493c6bdee1d9a8f37f09f564f44a35bb953d36e5846b88c2b8a2818cf0fa9f465be73a191293d56c4f4c05732d4d0f6a5")]
