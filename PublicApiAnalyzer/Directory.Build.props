@@ -47,9 +47,6 @@
     -->
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <NoWarn>$(NoWarn),1573,1591</NoWarn>
-
-    <!-- The referenced Roslyn API includes analyzers that completely fail. -->
-    <NoWarn>$(NoWarn),AD0001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
