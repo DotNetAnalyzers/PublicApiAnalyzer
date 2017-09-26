@@ -41,7 +41,7 @@ public class C
             var expected = this.CSharpDiagnostic(DeclarePublicAPIAnalyzer.DeclareNewApiRule).WithArguments("C").WithLocation(2, 14);
             await this.VerifyCSharpDiagnosticAsync(source, expected, CancellationToken.None).ConfigureAwait(false);
 
-            string fixedApi = "C";
+            string fixedApi = "C" + Environment.NewLine;
             var updatedApi = await this.GetUpdatedApiAsync(source, 0, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Equal(fixedApi, updatedApi.ToString());
@@ -89,27 +89,27 @@ public class C
 
             await this.VerifyCSharpDiagnosticAsync(source, expected, CancellationToken.None).ConfigureAwait(false);
 
-            string fixedApi = "C";
+            string fixedApi = "C" + Environment.NewLine;
             var updatedApi = await this.GetUpdatedApiAsync(source, 0, CancellationToken.None).ConfigureAwait(false);
             Assert.Equal(fixedApi, updatedApi.ToString());
 
-            fixedApi = "C.C() -> void";
+            fixedApi = "C.C() -> void" + Environment.NewLine;
             updatedApi = await this.GetUpdatedApiAsync(source, 1, CancellationToken.None).ConfigureAwait(false);
             Assert.Equal(fixedApi, updatedApi.ToString());
 
-            fixedApi = "C.Field -> int";
+            fixedApi = "C.Field -> int" + Environment.NewLine;
             updatedApi = await this.GetUpdatedApiAsync(source, 2, CancellationToken.None).ConfigureAwait(false);
             Assert.Equal(fixedApi, updatedApi.ToString());
 
-            fixedApi = "C.Property.get -> int";
+            fixedApi = "C.Property.get -> int" + Environment.NewLine;
             updatedApi = await this.GetUpdatedApiAsync(source, 3, CancellationToken.None).ConfigureAwait(false);
             Assert.Equal(fixedApi, updatedApi.ToString());
 
-            fixedApi = "C.Property.set -> void";
+            fixedApi = "C.Property.set -> void" + Environment.NewLine;
             updatedApi = await this.GetUpdatedApiAsync(source, 4, CancellationToken.None).ConfigureAwait(false);
             Assert.Equal(fixedApi, updatedApi.ToString());
 
-            fixedApi = "C.Method() -> void";
+            fixedApi = "C.Method() -> void" + Environment.NewLine;
             updatedApi = await this.GetUpdatedApiAsync(source, 5, CancellationToken.None).ConfigureAwait(false);
             Assert.Equal(fixedApi, updatedApi.ToString());
         }
@@ -730,7 +730,8 @@ public class C
 
             this.shippedText = string.Empty;
             this.unshippedText = string.Empty;
-            var fixedUnshippedText = @"C";
+            var fixedUnshippedText = @"C
+";
 
             await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, cancellationToken: CancellationToken.None).ConfigureAwait(false);
         }
@@ -752,7 +753,8 @@ public class C2 { }
             var fixedUnshippedText = @"C
 C.Field -> int
 C2
-C2.C2() -> void";
+C2.C2() -> void
+";
 
             await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, cancellationToken: CancellationToken.None).ConfigureAwait(false);
         }
@@ -848,7 +850,8 @@ C.CC.CC() -> void";
 C.CC.Field -> int
 C.Field -> int
 C2
-C2.C2() -> void";
+C2.C2() -> void
+";
 
             await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, cancellationToken: CancellationToken.None).ConfigureAwait(false);
         }
@@ -993,7 +996,8 @@ C.CC.Field -> int";
             var fixedUnshippedText = @"C
 C.Field -> int
 C2
-C2.C2() -> void";
+C2.C2() -> void
+";
 
             await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, cancellationToken: CancellationToken.None).ConfigureAwait(false);
         }
@@ -1028,6 +1032,24 @@ C2
 C2.C2() -> void";
 
             await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, numberOfFixAllIterations: 2, cancellationToken: CancellationToken.None).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task TestAddTrailingNewlineByDefaultAsync()
+        {
+            var source = @"
+public class C
+{
+}
+";
+
+            this.shippedText = string.Empty;
+            this.unshippedText = string.Empty;
+            var fixedUnshippedText = @"C
+C.C() -> void
+";
+
+            await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, cancellationToken: CancellationToken.None).ConfigureAwait(false);
         }
 
         [Theory]

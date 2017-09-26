@@ -87,7 +87,8 @@ namespace PublicApiAnalyzer.ApiDesign
 
             var sortedLines = newLines.OrderBy(s => s, StringComparer.Ordinal);
 
-            var newSourceText = sourceText.Replace(new TextSpan(0, sourceText.Length), string.Join(Environment.NewLine, sortedLines) + GetEndOfFileText(sourceText));
+            string newText = sortedLines.Any() ? string.Join(Environment.NewLine, sortedLines) + GetEndOfFileText(sourceText) : string.Empty;
+            var newSourceText = sourceText.Replace(new TextSpan(0, sourceText.Length), newText);
             return newSourceText;
         }
 
@@ -117,7 +118,8 @@ namespace PublicApiAnalyzer.ApiDesign
         {
             if (sourceText.Length == 0)
             {
-                return string.Empty;
+                // An empty file is treated as though it ends with an empty line
+                return Environment.NewLine;
             }
 
             var lastLine = sourceText.Lines[sourceText.Lines.Count - 1];
