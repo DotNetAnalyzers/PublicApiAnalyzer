@@ -1,3 +1,7 @@
+param (
+	[string]$Source = 'https://www.nuget.org/'
+)
+
 . .\version.ps1
 
 If ($Version.EndsWith('-dev')) {
@@ -5,4 +9,4 @@ If ($Version.EndsWith('-dev')) {
 	Exit 1
 }
 
-..\.nuget\NuGet.exe 'push' ".\nuget\PublicApiAnalyzer.$Version.nupkg" -Source 'https://www.nuget.org/api/v2/package'
+..\.nuget\NuGet.exe 'push' ".\nuget\PublicApiAnalyzer.$Version.nupkg" -Source $Source
