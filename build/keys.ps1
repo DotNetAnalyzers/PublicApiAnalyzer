@@ -4,14 +4,14 @@ If ($Version.Contains('-')) {
 
 	# Use the development keys
 	$Keys = @{
-		'portable-net45' = '4d7c3a889f597bf5'
+		'netstandard1.1' = '4d7c3a889f597bf5'
 	}
 
 } Else {
 
 	# Use the final release keys
 	$Keys = @{
-		'portable-net45' = '7f89516dec9aea59'
+		'netstandard1.1' = '7f89516dec9aea59'
 	}
 
 }
