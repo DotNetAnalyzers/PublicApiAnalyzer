@@ -42,19 +42,4 @@
     <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Helpers\HelpersResources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>HelpersResources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Helpers\HelpersResources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>HelpersResources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-
 </Project>
