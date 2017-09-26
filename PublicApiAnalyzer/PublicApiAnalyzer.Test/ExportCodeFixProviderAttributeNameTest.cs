@@ -9,7 +9,7 @@ namespace PublicApiAnalyzer.Test
     using System.Reflection;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CodeFixes;
-    using PublicApiAnalyzer.Helpers;
+    using PublicApiAnalyzer.ApiDesign;
     using Xunit;
 
     public class ExportCodeFixProviderAttributeNameTest
@@ -18,7 +18,7 @@ namespace PublicApiAnalyzer.Test
         {
             get
             {
-                var codeFixProviders = typeof(CustomBatchFixAllProvider)
+                var codeFixProviders = typeof(DeclarePublicAPIFix)
                     .Assembly
                     .GetTypes()
                     .Where(t => typeof(CodeFixProvider).IsAssignableFrom(t));
