@@ -33,7 +33,7 @@ namespace PublicApiAnalyzer.ApiDesign
             messageFormat: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.DeclarePublicApiMessage), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
             category: AnalyzerCategory.ApiDesign,
             defaultSeverity: DiagnosticSeverity.Warning,
-            isEnabledByDefault: true,
+            isEnabledByDefault: AnalyzerConstants.EnabledByDefault,
             description: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.DeclarePublicApiDescription), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
             helpLinkUri: $"https://github.com/DotNetAnalyzers/PublicApiAnalyzer/blob/master/documentation/{RoslynDiagnosticIds.DeclarePublicApiRuleId}.md",
             customTags: new string[0]);
@@ -44,7 +44,7 @@ namespace PublicApiAnalyzer.ApiDesign
             messageFormat: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.RemoveDeletedApiMessage), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
             category: AnalyzerCategory.ApiDesign,
             defaultSeverity: DiagnosticSeverity.Warning,
-            isEnabledByDefault: true,
+            isEnabledByDefault: AnalyzerConstants.EnabledByDefault,
             description: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.RemoveDeletedApiDescription), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
             helpLinkUri: $"https://github.com/DotNetAnalyzers/PublicApiAnalyzer/blob/master/documentation/{RoslynDiagnosticIds.RemoveDeletedApiRuleId}.md",
             customTags: new string[0]);
@@ -55,7 +55,7 @@ namespace PublicApiAnalyzer.ApiDesign
             messageFormat: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.ExposedNoninstantiableTypeMessage), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
             category: AnalyzerCategory.ApiDesign,
             defaultSeverity: DiagnosticSeverity.Warning,
-            isEnabledByDefault: true,
+            isEnabledByDefault: AnalyzerConstants.EnabledByDefault,
             description: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.ExposedNoninstantiableTypeDescription), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
             helpLinkUri: $"https://github.com/DotNetAnalyzers/PublicApiAnalyzer/blob/master/documentation/{RoslynDiagnosticIds.ExposedNoninstantiableTypeRuleId}.md",
             customTags: new string[0]);
@@ -66,7 +66,7 @@ namespace PublicApiAnalyzer.ApiDesign
             messageFormat: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.PublicApiFilesInvalidMessage), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
             category: AnalyzerCategory.ApiDesign,
             defaultSeverity: DiagnosticSeverity.Warning,
-            isEnabledByDefault: true,
+            isEnabledByDefault: AnalyzerConstants.EnabledByDefault,
             helpLinkUri: $"https://github.com/DotNetAnalyzers/PublicApiAnalyzer/blob/master/documentation/{RoslynDiagnosticIds.PublicApiFilesInvalid}.md",
             customTags: new string[0]);
 
@@ -76,7 +76,7 @@ namespace PublicApiAnalyzer.ApiDesign
             messageFormat: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.DuplicateSymbolsInPublicApiFilesMessage), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
             category: AnalyzerCategory.ApiDesign,
             defaultSeverity: DiagnosticSeverity.Warning,
-            isEnabledByDefault: true,
+            isEnabledByDefault: AnalyzerConstants.EnabledByDefault,
             helpLinkUri: $"https://github.com/DotNetAnalyzers/PublicApiAnalyzer/blob/master/documentation/{RoslynDiagnosticIds.DuplicatedSymbolInPublicApiFiles}.md",
             customTags: new string[0]);
 
@@ -86,7 +86,7 @@ namespace PublicApiAnalyzer.ApiDesign
             messageFormat: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.AvoidMultipleOverloadsWithOptionalParametersMessage), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
             category: AnalyzerCategory.ApiDesign,
             defaultSeverity: DiagnosticSeverity.Warning,
-            isEnabledByDefault: true,
+            isEnabledByDefault: AnalyzerConstants.EnabledByDefault,
             helpLinkUri: $"https://github.com/DotNetAnalyzers/PublicApiAnalyzer/blob/master/documentation/{RoslynDiagnosticIds.AvoidMultipleOverloadsWithOptionalParameters}.md",
             customTags: new string[0]);
 
@@ -96,7 +96,7 @@ namespace PublicApiAnalyzer.ApiDesign
             messageFormat: new LocalizableResourceString(nameof(RoslynDiagnosticsResources.OverloadWithOptionalParametersShouldHaveMostParametersMessage), RoslynDiagnosticsResources.ResourceManager, typeof(RoslynDiagnosticsResources)),
             category: AnalyzerCategory.ApiDesign,
             defaultSeverity: DiagnosticSeverity.Warning,
-            isEnabledByDefault: true,
+            isEnabledByDefault: AnalyzerConstants.EnabledByDefault,
             helpLinkUri: $"https://github.com/DotNetAnalyzers/PublicApiAnalyzer/blob/master/documentation/{RoslynDiagnosticIds.OverloadWithOptionalParametersShouldHaveMostParameters}.md",
             customTags: new string[0]);
 
