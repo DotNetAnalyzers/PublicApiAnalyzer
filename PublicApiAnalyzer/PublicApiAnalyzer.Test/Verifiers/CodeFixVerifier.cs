@@ -35,6 +35,8 @@ namespace TestHelper
             this.UseTabs = DefaultUseTabs;
         }
 
+        protected delegate Task VerifyCodeFixAsync(Project project, bool fixAll, CancellationToken cancellationToken);
+
         /// <summary>
         /// Gets or sets the value of the <see cref="FormattingOptions.IndentationSize"/> to apply to the test
         /// workspace.
@@ -95,6 +97,27 @@ namespace TestHelper
         /// <summary>
         /// Called to test a C# code fix when applied on the input source as a string.
         /// </summary>
+        /// <param name="oldSource">A class in the form of a string before the code fix was applied to it.</param>
+        /// <param name="verifyFixedProjectAsync">A validation function to verify the results of the code fix.</param>
+        /// <param name="oldFileName">The name of the file in the project before the code fix was applied.</param>
+        /// <param name="codeFixIndex">Index determining which code fix to apply if there are multiple.</param>
+        /// <param name="allowNewCompilerDiagnostics">A value indicating whether or not the test will fail if the code fix introduces other warnings after being applied.</param>
+        /// <param name="numberOfIncrementalIterations">The number of iterations the incremental fixer will be called.
+        /// If this value is less than 0, the negated value is treated as an upper limit as opposed to an exact
+        /// value.</param>
+        /// <param name="numberOfFixAllIterations">The number of iterations the Fix All fixer will be called. If this
+        /// value is less than 0, the negated value is treated as an upper limit as opposed to an exact value.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        protected Task VerifyCSharpFixAsync(string oldSource, VerifyCodeFixAsync verifyFixedProjectAsync, string oldFileName = null, int? codeFixIndex = null, bool allowNewCompilerDiagnostics = false, int numberOfIncrementalIterations = DefaultNumberOfIncrementalIterations, int numberOfFixAllIterations = 1, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var oldFileNames = oldFileName == null ? null : new[] { oldFileName };
+            return this.VerifyCSharpFixAsync(new[] { oldSource }, verifyFixedProjectAsync, oldFileNames, codeFixIndex, allowNewCompilerDiagnostics, numberOfIncrementalIterations, numberOfFixAllIterations, cancellationToken);
+        }
+
+        /// <summary>
+        /// Called to test a C# code fix when applied on the input source as a string.
+        /// </summary>
         /// <param name="oldSources">An array of sources in the form of strings before the code fix was applied to them.</param>
         /// <param name="newSources">An array of sources in the form of strings after the code fix was applied to them.</param>
         /// <param name="batchNewSources">An array of sources in the form of a strings after the batch fixer was applied to them.</param>
@@ -140,6 +163,76 @@ namespace TestHelper
                 }
 
                 var t4 = this.VerifyFixInternalAsync(LanguageNames.CSharp, this.GetCSharpDiagnosticAnalyzers().ToImmutableArray(), this.GetCSharpCodeFixProvider(), oldSources, batchNewSources ?? newSources, oldFileNames, newFileNames, codeFixIndex, allowNewCompilerDiagnostics, numberOfFixAllIterations, FixAllAnalyzerDiagnosticsInSolutionAsync, cancellationToken).ConfigureAwait(false);
+                if (Debugger.IsAttached)
+                {
+                    await t4;
+                }
+
+                if (!Debugger.IsAttached)
+                {
+                    // Allow the operations to run in parallel
+                    await t1;
+                    await t2;
+                    await t3;
+                    await t4;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called to test a C# code fix when applied on the input source as a string.
+        /// </summary>
+        /// <param name="oldSources">An array of sources in the form of strings before the code fix was applied to them.</param>
+        /// <param name="verifyFixedProjectAsync">A validation function to verify the results of the code fix.</param>
+        /// <param name="oldFileNames">An array of file names in the project before the code fix was applied.</param>
+        /// <param name="codeFixIndex">Index determining which code fix to apply if there are multiple.</param>
+        /// <param name="allowNewCompilerDiagnostics">A value indicating whether or not the test will fail if the code fix introduces other warnings after being applied.</param>
+        /// <param name="numberOfIncrementalIterations">The number of iterations the incremental fixer will be called.
+        /// If this value is less than 0, the negated value is treated as an upper limit as opposed to an exact
+        /// value.</param>
+        /// <param name="numberOfFixAllIterations">The number of iterations the Fix All fixer will be called. If this
+        /// value is less than 0, the negated value is treated as an upper limit as opposed to an exact value.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        protected async Task VerifyCSharpFixAsync(string[] oldSources, VerifyCodeFixAsync verifyFixedProjectAsync, string[] oldFileNames = null, int? codeFixIndex = null, bool allowNewCompilerDiagnostics = false, int numberOfIncrementalIterations = DefaultNumberOfIncrementalIterations, int numberOfFixAllIterations = 1, CancellationToken cancellationToken = default(CancellationToken))
+        {
+#pragma warning disable SA1101 // Prefix local calls with this
+            Func<Project, CancellationToken, Task> verifyAsync = (project, ct) => verifyFixedProjectAsync(project, false, ct);
+#pragma warning restore SA1101 // Prefix local calls with this
+
+            var t1 = this.VerifyFixInternalAsync(LanguageNames.CSharp, this.GetCSharpDiagnosticAnalyzers().ToImmutableArray(), this.GetCSharpCodeFixProvider(), oldSources, oldFileNames, codeFixIndex, allowNewCompilerDiagnostics, numberOfIncrementalIterations, FixEachAnalyzerDiagnosticAsync, verifyAsync, cancellationToken).ConfigureAwait(false);
+
+            var fixAllProvider = this.GetCSharpCodeFixProvider().GetFixAllProvider();
+            Assert.NotEqual(WellKnownFixAllProviders.BatchFixer, fixAllProvider);
+
+            if (fixAllProvider == null)
+            {
+                await t1;
+            }
+            else
+            {
+                if (Debugger.IsAttached)
+                {
+                    await t1;
+                }
+
+#pragma warning disable SA1101 // Prefix local calls with this
+                Func<Project, CancellationToken, Task> verifyFixAllAsync = (project, ct) => verifyFixedProjectAsync(project, true, ct);
+#pragma warning restore SA1101 // Prefix local calls with this
+
+                var t2 = this.VerifyFixInternalAsync(LanguageNames.CSharp, this.GetCSharpDiagnosticAnalyzers().ToImmutableArray(), this.GetCSharpCodeFixProvider(), oldSources, oldFileNames, codeFixIndex, allowNewCompilerDiagnostics, numberOfFixAllIterations, FixAllAnalyzerDiagnosticsInDocumentAsync, verifyFixAllAsync, cancellationToken).ConfigureAwait(false);
+                if (Debugger.IsAttached)
+                {
+                    await t2;
+                }
+
+                var t3 = this.VerifyFixInternalAsync(LanguageNames.CSharp, this.GetCSharpDiagnosticAnalyzers().ToImmutableArray(), this.GetCSharpCodeFixProvider(), oldSources, oldFileNames, codeFixIndex, allowNewCompilerDiagnostics, numberOfFixAllIterations, FixAllAnalyzerDiagnosticsInProjectAsync, verifyFixAllAsync, cancellationToken).ConfigureAwait(false);
+                if (Debugger.IsAttached)
+                {
+                    await t3;
+                }
+
+                var t4 = this.VerifyFixInternalAsync(LanguageNames.CSharp, this.GetCSharpDiagnosticAnalyzers().ToImmutableArray(), this.GetCSharpCodeFixProvider(), oldSources, oldFileNames, codeFixIndex, allowNewCompilerDiagnostics, numberOfFixAllIterations, FixAllAnalyzerDiagnosticsInSolutionAsync, verifyFixAllAsync, cancellationToken).ConfigureAwait(false);
                 if (Debugger.IsAttached)
                 {
                     await t4;
@@ -394,14 +487,12 @@ namespace TestHelper
             return false;
         }
 
-        private async Task VerifyFixInternalAsync(
+        private async Task<Project> ApplyFixInternalAsync(
             string language,
             ImmutableArray<DiagnosticAnalyzer> analyzers,
             CodeFixProvider codeFixProvider,
             string[] oldSources,
-            string[] newSources,
             string[] oldFileNames,
-            string[] newFileNames,
             int? codeFixIndex,
             bool allowNewCompilerDiagnostics,
             int numberOfIterations,
@@ -412,12 +503,6 @@ namespace TestHelper
             {
                 // Make sure the test case is consistent regarding the number of sources and file names before the code fix
                 Assert.Equal($"{oldSources.Length} old file names", $"{oldFileNames.Length} old file names");
-            }
-
-            if (newFileNames != null)
-            {
-                // Make sure the test case is consistent regarding the number of sources and file names after the code fix
-                Assert.Equal($"{newSources.Length} new file names", $"{newFileNames.Length} new file names");
             }
 
             var project = this.CreateProject(oldSources, language, oldFileNames);
@@ -447,21 +532,74 @@ namespace TestHelper
                 Assert.True(false, message.ToString());
             }
 
-            // After applying all of the code fixes, compare the resulting string to the inputted one
-            var updatedDocuments = project.Documents.ToArray();
+            return project;
+        }
 
-            Assert.Equal($"{newSources.Length} documents", $"{updatedDocuments.Length} documents");
-
-            for (int i = 0; i < updatedDocuments.Length; i++)
+        private async Task VerifyFixInternalAsync(
+            string language,
+            ImmutableArray<DiagnosticAnalyzer> analyzers,
+            CodeFixProvider codeFixProvider,
+            string[] oldSources,
+            string[] newSources,
+            string[] oldFileNames,
+            string[] newFileNames,
+            int? codeFixIndex,
+            bool allowNewCompilerDiagnostics,
+            int numberOfIterations,
+            Func<ImmutableArray<DiagnosticAnalyzer>, CodeFixProvider, int?, Project, int, CancellationToken, Task<Project>> getFixedProject,
+            CancellationToken cancellationToken)
+        {
+            if (oldFileNames != null)
             {
-                var actual = await GetStringFromDocumentAsync(updatedDocuments[i], cancellationToken).ConfigureAwait(false);
-                Assert.Equal(newSources[i], actual);
-
-                if (newFileNames != null)
-                {
-                    Assert.Equal(newFileNames[i], updatedDocuments[i].Name);
-                }
+                // Make sure the test case is consistent regarding the number of sources and file names before the code fix
+                Assert.Equal($"{oldSources.Length} old file names", $"{oldFileNames.Length} old file names");
             }
+
+            if (newFileNames != null)
+            {
+                // Make sure the test case is consistent regarding the number of sources and file names after the code fix
+                Assert.Equal($"{newSources.Length} new file names", $"{newFileNames.Length} new file names");
+            }
+
+            // After applying all of the code fixes, compare the resulting string to the inputed one
+            Func<Project, CancellationToken, Task> verifyFixedProjectAsync =
+                async (project, ct) =>
+                {
+                    var updatedDocuments = project.Documents.ToArray();
+
+                    Assert.Equal($"{newSources.Length} documents", $"{updatedDocuments.Length} documents");
+
+                    for (int i = 0; i < updatedDocuments.Length; i++)
+                    {
+                        var actual = await GetStringFromDocumentAsync(updatedDocuments[i], cancellationToken).ConfigureAwait(false);
+                        Assert.Equal(newSources[i], actual);
+
+                        if (newFileNames != null)
+                        {
+                            Assert.Equal(newFileNames[i], updatedDocuments[i].Name);
+                        }
+                    }
+                };
+
+            await this.VerifyFixInternalAsync(language, analyzers, codeFixProvider, oldSources, oldFileNames, codeFixIndex, allowNewCompilerDiagnostics, numberOfIterations, getFixedProject, verifyFixedProjectAsync, cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task VerifyFixInternalAsync(
+            string language,
+            ImmutableArray<DiagnosticAnalyzer> analyzers,
+            CodeFixProvider codeFixProvider,
+            string[] oldSources,
+            string[] oldFileNames,
+            int? codeFixIndex,
+            bool allowNewCompilerDiagnostics,
+            int numberOfIterations,
+            Func<ImmutableArray<DiagnosticAnalyzer>, CodeFixProvider, int?, Project, int, CancellationToken, Task<Project>> getFixedProject,
+            Func<Project, CancellationToken, Task> verifyFixedProjectAsync,
+            CancellationToken cancellationToken)
+        {
+            var project = await this.ApplyFixInternalAsync(language, analyzers, codeFixProvider, oldSources, oldFileNames, codeFixIndex, allowNewCompilerDiagnostics, numberOfIterations, getFixedProject, cancellationToken).ConfigureAwait(false);
+
+            await verifyFixedProjectAsync(project, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<Tuple<Solution, ImmutableArray<CodeAction>>> GetOfferedFixesInternalAsync(string language, string source, int? diagnosticIndex, ImmutableArray<DiagnosticAnalyzer> analyzers, CodeFixProvider codeFixProvider, CancellationToken cancellationToken)
