@@ -3,10 +3,12 @@
 
 namespace PublicApiAnalyzer.Test.ApiDesign
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CodeActions;
     using Microsoft.CodeAnalysis.CodeFixes;
     using Microsoft.CodeAnalysis.Diagnostics;
@@ -647,6 +649,413 @@ C.Method6(string p1) -> void
             await this.VerifyCSharpDiagnosticAsync(source, expected, CancellationToken.None).ConfigureAwait(false);
         }
 
+        [Fact]
+        public async Task TestSimpleMissingMemberFixAsync()
+        {
+            var source = @"
+public class C
+{
+    public int Field;
+    public int Property { get; set; }
+    public void Method() { } 
+    public int ArrowExpressionProperty => 0;
+    public int NewField; // Newly added field, not in current public API.
+}
+";
+
+            this.shippedText = string.Empty;
+            this.unshippedText = @"C
+C.ArrowExpressionProperty.get -> int
+C.C() -> void
+C.Field -> int
+C.Method() -> void
+C.Property.get -> int
+C.Property.set -> void";
+            var fixedUnshippedText = @"C
+C.ArrowExpressionProperty.get -> int
+C.C() -> void
+C.Field -> int
+C.Method() -> void
+C.NewField -> int
+C.Property.get -> int
+C.Property.set -> void";
+
+            await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, cancellationToken: CancellationToken.None).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task TestAddAndRemoveMembersFixAsync()
+        {
+            // Unshipped file has a state 'ObsoleteField' entry and a missing 'NewField' entry.
+            var source = @"
+public class C
+{
+    public int Field;
+    public int Property { get; set; }
+    public void Method() { } 
+    public int ArrowExpressionProperty => 0;
+    public int NewField;
+}
+";
+            this.shippedText = string.Empty;
+            this.unshippedText = @"C
+C.ArrowExpressionProperty.get -> int
+C.C() -> void
+C.Field -> int
+C.Method() -> void
+C.ObsoleteField -> int
+C.Property.get -> int
+C.Property.set -> void";
+            var fixedUnshippedText = @"C
+C.ArrowExpressionProperty.get -> int
+C.C() -> void
+C.Field -> int
+C.Method() -> void
+C.NewField -> int
+C.Property.get -> int
+C.Property.set -> void";
+
+            await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, cancellationToken: CancellationToken.None).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task TestSimpleMissingTypeFixAsync()
+        {
+            var source = @"
+public class C
+{
+    private C() { }
+}
+";
+
+            this.shippedText = string.Empty;
+            this.unshippedText = string.Empty;
+            var fixedUnshippedText = @"C";
+
+            await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, cancellationToken: CancellationToken.None).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task TestMultipleMissingTypeAndMemberFixAsync()
+        {
+            var source = @"
+public class C
+{
+    private C() { }
+    public int Field;
+}
+public class C2 { }
+";
+
+            this.shippedText = string.Empty;
+            this.unshippedText = string.Empty;
+            var fixedUnshippedText = @"C
+C.Field -> int
+C2
+C2.C2() -> void";
+
+            await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, cancellationToken: CancellationToken.None).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task TestChangingMethodSignatureForAnUnshippedMethodFixAsync()
+        {
+            var source = @"
+public class C
+{
+    private C() { }
+    public void Method(int p1){ }
+}
+";
+
+            this.shippedText = @"C";
+
+            // previously method had no params, so the fix should remove the previous overload.
+            this.unshippedText = @"C.Method() -> void";
+            var fixedUnshippedText = @"C.Method(int p1) -> void";
+
+            await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, cancellationToken: CancellationToken.None).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task TestChangingMethodSignatureForAnUnshippedMethodWithShippedOverloadsFixAsync()
+        {
+            var source = @"
+public class C
+{
+    private C() { }
+    public void Method(int p1){ }
+    public void Method(int p1, int p2){ }
+    public void Method(char p1){ }
+}
+";
+
+            this.shippedText = @"C
+C.Method(int p1) -> void
+C.Method(int p1, int p2) -> void";
+
+            // previously method had no params, so the fix should remove the previous overload.
+            this.unshippedText = @"C.Method() -> void";
+            var fixedUnshippedText = @"C.Method(char p1) -> void";
+
+            await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, cancellationToken: CancellationToken.None).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task TestAddingNewPublicOverloadFixAsync()
+        {
+            var source = @"
+public class C
+{
+    private C() { }
+    public void Method(){ }
+    internal void Method(int p1){ }
+    internal void Method(int p1, int p2){ }
+    public void Method(char p1){ }
+}
+";
+
+            this.shippedText = string.Empty;
+            this.unshippedText = @"C
+C.Method(char p1) -> void";
+            var fixedUnshippedText = @"C
+C.Method() -> void
+C.Method(char p1) -> void";
+
+            await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, cancellationToken: CancellationToken.None).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task TestMissingTypeAndMemberAndNestedMembersFixAsync()
+        {
+            var source = @"
+public class C
+{
+    private C() { }
+    public int Field;
+    public class CC
+    {
+        public int Field;
+    }
+}
+public class C2 { }
+";
+
+            this.shippedText = @"C.CC
+C.CC.CC() -> void";
+            this.unshippedText = string.Empty;
+            var fixedUnshippedText = @"C
+C.CC.Field -> int
+C.Field -> int
+C2
+C2.C2() -> void";
+
+            await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, cancellationToken: CancellationToken.None).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task TestMissingNestedGenericMembersAndStaleMembersFixAsync()
+        {
+            var source = @"
+public class C
+{
+    private C() { }
+    public CC<int> Field;
+    private C3.C4 Field2;
+    private C3.C4 Method(C3.C4 p1) { throw new System.NotImplementedException(); }
+    public class CC<T>
+    {
+        public int Field;
+        public CC<int> Field2;
+    }
+
+    public class C3
+    {
+        public class C4 { }
+    }
+}
+public class C2 { }
+";
+
+            this.shippedText = string.Empty;
+            this.unshippedText = @"C.C3
+C.C3.C3() -> void
+C.C3.C4
+C.C3.C4.C4() -> void
+C.CC<T>
+C.CC<T>.CC() -> void
+C.Field2 -> C.C3.C4
+C.Method(C.C3.C4 p1) -> C.C3.C4
+";
+            var fixedUnshippedText = @"C
+C.C3
+C.C3.C3() -> void
+C.C3.C4
+C.C3.C4.C4() -> void
+C.CC<T>
+C.CC<T>.CC() -> void
+C.CC<T>.Field -> int
+C.CC<T>.Field2 -> C.CC<int>
+C.Field -> C.CC<int>
+C2
+C2.C2() -> void
+";
+
+            await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, cancellationToken: CancellationToken.None).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task TestWithExistingUnshippedNestedMembersFixAsync()
+        {
+            var source = @"
+public class C
+{
+    private C() { }
+    public int Field;
+    public class CC
+    {
+        public int Field;
+    }
+}
+public class C2 { }
+";
+
+            this.shippedText = string.Empty;
+            this.unshippedText = @"C.CC
+C.CC.CC() -> void
+C.CC.Field -> int";
+            var fixedUnshippedText = @"C
+C.CC
+C.CC.CC() -> void
+C.CC.Field -> int
+C.Field -> int
+C2
+C2.C2() -> void";
+
+            await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, cancellationToken: CancellationToken.None).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task TestWithExistingUnshippedNestedGenericMembersFixAsync()
+        {
+            var source = @"
+public class C
+{
+    private C() { }
+    public class CC
+    {
+        public int Field;
+    }
+    public class CC<T>
+    {
+        private CC() { }
+        public int Field;
+    }
+}
+";
+
+            this.shippedText = string.Empty;
+            this.unshippedText = @"C
+C.CC
+C.CC.Field -> int
+C.CC<T>
+C.CC<T>.Field -> int";
+            var fixedUnshippedText = @"C
+C.CC
+C.CC.CC() -> void
+C.CC.Field -> int
+C.CC<T>
+C.CC<T>.Field -> int";
+
+            await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, cancellationToken: CancellationToken.None).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task TestWithExistingShippedNestedMembersFixAsync()
+        {
+            var source = @"
+public class C
+{
+    private C() { }
+    public int Field;
+    public class CC
+    {
+        public int Field;
+    }
+}
+public class C2 { }
+";
+
+            this.shippedText = @"C.CC
+C.CC.CC() -> void
+C.CC.Field -> int";
+            this.unshippedText = string.Empty;
+            var fixedUnshippedText = @"C
+C.Field -> int
+C2
+C2.C2() -> void";
+
+            await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, cancellationToken: CancellationToken.None).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task TestOnlyRemoveStaleSiblingEntriesFixAsync()
+        {
+            var source = @"
+public class C
+{
+    private C() { }
+    public int Field;
+    public class CC
+    {
+        private int Field; // This has a stale public API entry, but this shouldn't be removed unless we attempt to add a public API entry for a sibling.
+    }
+}
+public class C2 { }
+";
+
+            this.shippedText = string.Empty;
+            this.unshippedText = @"
+C.CC
+C.CC.CC() -> void
+C.CC.Field -> int";
+            var fixedUnshippedText = @"C
+C.CC
+C.CC.CC() -> void
+C.CC.Field -> int
+C.Field -> int
+C2
+C2.C2() -> void";
+
+            await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, numberOfFixAllIterations: 2, cancellationToken: CancellationToken.None).ConfigureAwait(false);
+        }
+
+        [Theory]
+        [InlineData("", "")]
+        [InlineData("\r\n", "\r\n")]
+        [InlineData("\r\n\r\n", "\r\n")]
+        public async Task TestPreserveTrailingNewlineAsync(string originalEndOfFile, string expectedEndOfFile)
+        {
+            var source = @"
+public class C
+{
+    public int Property { get; }
+    public int NewField; // Newly added field, not in current public API.
+}
+";
+
+            this.shippedText = string.Empty;
+            this.unshippedText = $@"C
+C.C() -> void
+C.Property.get -> int{originalEndOfFile}";
+            var fixedUnshippedText = $@"C
+C.C() -> void
+C.NewField -> int
+C.Property.get -> int{expectedEndOfFile}";
+
+            await this.VerifyCSharpUnshippedFileFixAsync(source, fixedUnshippedText, cancellationToken: CancellationToken.None).ConfigureAwait(false);
+        }
+
         protected override IEnumerable<DiagnosticAnalyzer> GetCSharpDiagnosticAnalyzers()
         {
             yield return new DeclarePublicAPIAnalyzer();
@@ -675,6 +1084,18 @@ C.Method6(string p1) -> void
         protected override string GetUnshippedPublicApiFilePath()
         {
             return this.unshippedFilePath;
+        }
+
+        private async Task VerifyCSharpUnshippedFileFixAsync(string source, string fixedUnshippedText, int numberOfFixAllIterations = 1, CancellationToken cancellationToken = default)
+        {
+            VerifyCodeFixAsync verifyAsync =
+                async (Project project, bool fixAll, CancellationToken ct) =>
+                {
+                    var unshippedFile = project.AdditionalDocuments.Single(document => document.Name == DeclarePublicAPIAnalyzer.UnshippedFileName);
+                    Assert.Equal(fixedUnshippedText, (await unshippedFile.GetTextAsync(ct).ConfigureAwait(false)).ToString());
+                };
+
+            await this.VerifyCSharpFixAsync(source, verifyAsync, numberOfFixAllIterations: numberOfFixAllIterations, cancellationToken: CancellationToken.None).ConfigureAwait(false);
         }
 
         private async Task<SourceText> GetUpdatedApiAsync(string source, int diagnosticIndex, CancellationToken cancellationToken)
