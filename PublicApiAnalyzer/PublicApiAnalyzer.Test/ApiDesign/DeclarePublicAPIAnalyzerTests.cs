@@ -509,7 +509,7 @@ C.Method() -> void
         }
 
         [Fact]
-        public async Task TypeForwardsAreProcessedAsync()
+        public async Task TypeForwardsAreProcessed1Async()
         {
             var source = @"
 [assembly: System.Runtime.CompilerServices.TypeForwardedTo(typeof(System.StringComparison))]
@@ -525,6 +525,34 @@ System.StringComparison.Ordinal = 4 -> System.StringComparison (forwarded, conta
 System.StringComparison.OrdinalIgnoreCase = 5 -> System.StringComparison (forwarded, contained in mscorlib)
 ";
             this.unshippedText = string.Empty;
+
+            await this.VerifyCSharpDiagnosticAsync(source, EmptyDiagnosticResults, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task TypeForwardsAreProcessed2Async()
+        {
+            var source = @"
+[assembly: System.Runtime.CompilerServices.TypeForwardedTo(typeof(System.StringComparer))]
+";
+            this.shippedText = $@"
+System.StringComparer (forwarded, contained in mscorlib)
+static System.StringComparer.InvariantCulture.get -> System.StringComparer (forwarded, contained in mscorlib)
+static System.StringComparer.InvariantCultureIgnoreCase.get -> System.StringComparer (forwarded, contained in mscorlib)
+static System.StringComparer.CurrentCulture.get -> System.StringComparer (forwarded, contained in mscorlib)
+static System.StringComparer.CurrentCultureIgnoreCase.get -> System.StringComparer (forwarded, contained in mscorlib)
+static System.StringComparer.Ordinal.get -> System.StringComparer (forwarded, contained in mscorlib)
+static System.StringComparer.OrdinalIgnoreCase.get -> System.StringComparer (forwarded, contained in mscorlib)
+static System.StringComparer.Create(System.Globalization.CultureInfo culture, bool ignoreCase) -> System.StringComparer (forwarded, contained in mscorlib)
+System.StringComparer.Compare(object x, object y) -> int (forwarded, contained in mscorlib)
+System.StringComparer.Equals(object x, object y) -> bool (forwarded, contained in mscorlib)
+System.StringComparer.GetHashCode(object obj) -> int (forwarded, contained in mscorlib)
+abstract System.StringComparer.Compare(string x, string y) -> int (forwarded, contained in mscorlib)
+abstract System.StringComparer.Equals(string x, string y) -> bool (forwarded, contained in mscorlib)
+abstract System.StringComparer.GetHashCode(string obj) -> int (forwarded, contained in mscorlib)
+System.StringComparer.StringComparer() -> void (forwarded, contained in mscorlib)
+";
+            this.unshippedText = $@"";
 
             await this.VerifyCSharpDiagnosticAsync(source, EmptyDiagnosticResults, CancellationToken.None).ConfigureAwait(false);
         }
