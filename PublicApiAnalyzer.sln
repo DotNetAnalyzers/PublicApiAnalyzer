@@ -31,8 +31,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{7B1E5C00
 		build\opencover-report.ps1 = build\opencover-report.ps1
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "documentation", "documentation", "{443032E9-3E95-4023-8E4B-51825BB94EE7}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PublicApiAnalyzer.CodeFixes", "PublicApiAnalyzer\PublicApiAnalyzer.CodeFixes\PublicApiAnalyzer.CodeFixes.csproj", "{8974DAEA-DD04-44B4-86A2-B430D066E9A1}"
 EndProject
 Global
