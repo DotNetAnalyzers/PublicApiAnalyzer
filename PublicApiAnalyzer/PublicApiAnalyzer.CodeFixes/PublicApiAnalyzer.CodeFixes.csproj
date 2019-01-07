@@ -6,8 +6,13 @@
     <RootNamespace>PublicApiAnalyzer</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
-    <NuspecFile>PublicApiAnalyzer.nuspec</NuspecFile>
-    <NuspecProperties>configuration=$(Configuration);version=$(InformationalVersion)</NuspecProperties>
+    <NuspecFile Condition="'$(MetadataPackage)' != 'true'">PublicApiAnalyzer.nuspec</NuspecFile>
+    <NuspecFile Condition="'$(MetadataPackage)' == 'true'">PublicApiAnalyzer.Metadata.nuspec</NuspecFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- This package intentionally uses SemVer 2. -->
+    <NoWarn>$(NoWarn),NU5105</NoWarn>
   </PropertyGroup>
 
   <Choose>
@@ -24,12 +29,7 @@
 
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile Condition="'$(KeyConfiguration)' == 'Final'">..\..\build\keys\PublicApiAnalyzer.snk</AssemblyOriginatorKeyFile>
-    <AssemblyOriginatorKeyFile Condition="'$(KeyConfiguration)' != 'Final'">..\..\build\keys\PublicApiAnalyzer.dev.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(KeyConfiguration)' != 'Final'">
-    <DefineConstants>$(DefineConstants);DEVELOPMENT_KEY</DefineConstants>
+    <AssemblyOriginatorKeyFile>..\..\build\keys\PublicApiAnalyzer.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -51,5 +51,39 @@
     <AdditionalFiles Include="PublicAPI.Shipped.txt" />
     <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
   </ItemGroup>
+
+  <Target Name="SetNuspecProperties" AfterTargets="GetBuildVersion">
+    <PropertyGroup>
+      <BaseNuspecId>DotNetAnalyzers.PublicApiAnalyzer</BaseNuspecId>
+      <ImplementationNuspecId>$(BaseNuspecId)</ImplementationNuspecId>
+      <MetadataNuspecId>$(BaseNuspecId)</MetadataNuspecId>
+
+      <ImplementationNuspecId Condition="'$(PrereleaseVersion)' != ''">$(BaseNuspecId).Unstable</ImplementationNuspecId>
+      <MetadataNuspecId Condition="'$(PrereleaseVersion)' == ''">$(BaseNuspecId).Unstable</MetadataNuspecId>
+
+      <NuspecId Condition="'$(MetadataPackage)' != 'true'">$(ImplementationNuspecId)</NuspecId>
+      <NuspecId Condition="'$(MetadataPackage)' == 'true'">$(MetadataNuspecId)</NuspecId>
+
+      <NuspecUnstableVersion>$(AssemblyVersion)</NuspecUnstableVersion>
+      <NuspecUnstableVersion Condition="'$(PublicRelease)' != 'true'">$(NuspecUnstableVersion)-g$(GitCommitIdShort)</NuspecUnstableVersion>
+      <NuspecStableVersion>$(PackageVersion)</NuspecStableVersion>
+
+      <UnstablePackage Condition="('$(PrereleaseVersion)' != '' AND '$(MetadataPackage)' != 'true') OR ('$(PrereleaseVersion)' == '' AND '$(MetadataPackage)' == 'true')">true</UnstablePackage>
+
+      <NuspecVersion Condition="'$(UnstablePackage)' != 'true'">$(NuspecStableVersion)</NuspecVersion>
+      <NuspecVersion Condition="'$(UnstablePackage)' == 'true'">$(NuspecUnstableVersion)</NuspecVersion>
+
+      <ImplementationNuspecVersion Condition="'$(PrereleaseVersion)' != ''">$(NuspecUnstableVersion)</ImplementationNuspecVersion>
+      <ImplementationNuspecVersion Condition="'$(PrereleaseVersion)' == ''">$(NuspecStableVersion)</ImplementationNuspecVersion>
+
+      <NuspecProperties>id=$(NuspecId);configuration=$(Configuration);GitCommitIdShort=$(GitCommitIdShort);version=$(NuspecVersion);tag=$(NuspecStableVersion);implId=$(ImplementationNuspecId);implVersion=$(ImplementationNuspecVersion)</NuspecProperties>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="PackMetadata" AfterTargets="Pack" Condition="'$(MetadataPackage)' != 'true'">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="Pack"
+             Properties="MetadataPackage=true;IncludeSymbols=false" />
+  </Target>
 
 </Project>

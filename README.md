@@ -8,7 +8,7 @@
 
 ## Using Public API Analyzer
 
-The preferable way to use this package is to add the NuGet package [PublicApiAnalyzer](http://www.nuget.org/packages/PublicApiAnalyzer/)
+The preferable way to use this package is to add the NuGet package [DotNetAnalyzers.PublicApiAnalyzer](http://www.nuget.org/packages/DotNetAnalyzers.PublicApiAnalyzer/)
 to the project where you want to enforce rules.
 
 The severity of individual rules may be configured using [rule set files](https://msdn.microsoft.com/en-us/library/dd264996.aspx)

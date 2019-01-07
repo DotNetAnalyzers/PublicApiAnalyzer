@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0"?>
 <package>
   <metadata minClientVersion="2.7">
-    <id>PublicApiAnalyzer</id>
+    <id>$id$</id>
     <version>0.0.0</version>
-    <title>Public API Analyzer</title>
+    <title>$id$</title>
     <authors>Sam Harwell et. al.</authors>
     <owners>Sam Harwell</owners>
     <licenseUrl>https://raw.githubusercontent.com/DotNetAnalyzers/PublicApiAnalyzer/$version$/LICENSE</licenseUrl>
@@ -16,6 +16,10 @@
     <developmentDependency>true</developmentDependency>
   </metadata>
   <files>
+
+    <!-- Additional Files -->
+    <file src="..\..\LICENSE" />
+    <file src="..\..\THIRD-PARTY-NOTICES.txt" />
 
     <!-- Binaries and symbols -->
     <file src="bin\$Configuration$\netstandard1.1\PublicApiAnalyzer.dll" target="analyzers\dotnet\cs" />

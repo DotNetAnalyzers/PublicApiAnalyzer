@@ -3,7 +3,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.1;net452</TargetFrameworks>
-    <PackageId>PublicApiAnalyzer.NewIdRequiredDueToNuGetBug</PackageId>
   </PropertyGroup>
 
   <Choose>
@@ -20,12 +19,7 @@
 
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile Condition="'$(KeyConfiguration)' == 'Final'">..\..\build\keys\PublicApiAnalyzer.snk</AssemblyOriginatorKeyFile>
-    <AssemblyOriginatorKeyFile Condition="'$(KeyConfiguration)' != 'Final'">..\..\build\keys\PublicApiAnalyzer.dev.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(KeyConfiguration)' != 'Final'">
-    <DefineConstants>$(DefineConstants);DEVELOPMENT_KEY</DefineConstants>
+    <AssemblyOriginatorKeyFile>..\..\build\keys\PublicApiAnalyzer.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
