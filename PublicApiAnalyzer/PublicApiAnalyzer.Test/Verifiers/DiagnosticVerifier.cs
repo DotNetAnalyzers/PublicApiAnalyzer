@@ -49,7 +49,7 @@ namespace TestHelper
                         continue;
                     }
 
-                    string expected = $"https://github.com/DotNetAnalyzers/PublicApiAnalyzer/blob/master/documentation/{diagnostic.Id}.md";
+                    string expected = $"https://github.com/DotNetAnalyzers/PublicApiAnalyzer/blob/master/docs/{diagnostic.Id}.md";
                     Assert.Equal(expected, diagnostic.HelpLinkUri);
                 }
             }
