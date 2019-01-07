@@ -1,5 +1,7 @@
 # Public API Analyzer
 
+[![NuGet](https://img.shields.io/nuget/v/DotNetAnalyzers.PublicApiAnalyzer.svg)](https://www.nuget.org/packages/DotNetAnalyzers.PublicApiAnalyzer) [![NuGet Beta](https://img.shields.io/nuget/vpre/DotNetAnalyzers.PublicApiAnalyzer.svg)](https://www.nuget.org/packages/DotNetAnalyzers.PublicApiAnalyzer)
+
 [![Join the chat at https://gitter.im/DotNetAnalyzers/PublicApiAnalyzer](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/DotNetAnalyzers/PublicApiAnalyzer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 [![Build status](https://ci.appveyor.com/api/projects/status/27963rsy48aseywm/branch/master?svg=true)](https://ci.appveyor.com/project/sharwell/publicapianalyzer/branch/master)
