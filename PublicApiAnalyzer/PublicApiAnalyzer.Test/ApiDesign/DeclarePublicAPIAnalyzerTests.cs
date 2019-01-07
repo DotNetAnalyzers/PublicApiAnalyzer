@@ -190,6 +190,50 @@ C";
         }
 
         [Fact]
+        public async Task ShippedTextWithMissingImplicitStructConstructorAsync()
+        {
+            var source = @"
+public struct C
+{
+}
+";
+
+            this.shippedText = @"
+C";
+            this.unshippedText = string.Empty;
+
+            // Test0.cs(2,15): warning RS0016: Symbol 'implicit constructor for C' is not part of the declared API.
+            string arg = string.Format(RoslynDiagnosticsResources.PublicImplicitConstructorErrorMessageName, "C");
+            var expected = this.CSharpDiagnostic(DeclarePublicAPIAnalyzer.DeclareNewApiRule).WithArguments(arg).WithLocation(2, 15);
+
+            await this.VerifyCSharpDiagnosticAsync(source, expected, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task ShippedTextWithMissingImplicitStructConstructorWithOtherOverloadsAsync()
+        {
+            var source = @"
+public struct C
+{
+    public C(int value)
+    {
+    }
+}
+";
+
+            this.shippedText = @"
+C
+C.C(int value) -> void";
+            this.unshippedText = string.Empty;
+
+            // Test0.cs(2,15): warning RS0016: Symbol 'implicit constructor for C' is not part of the declared API.
+            string arg = string.Format(RoslynDiagnosticsResources.PublicImplicitConstructorErrorMessageName, "C");
+            var expected = this.CSharpDiagnostic(DeclarePublicAPIAnalyzer.DeclareNewApiRule).WithArguments(arg).WithLocation(2, 15);
+
+            await this.VerifyCSharpDiagnosticAsync(source, expected, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        [Fact]
         public async Task ShippedTextWithImplicitConstructorAndBreakingCodeChangeAsync()
         {
             var source = @"
