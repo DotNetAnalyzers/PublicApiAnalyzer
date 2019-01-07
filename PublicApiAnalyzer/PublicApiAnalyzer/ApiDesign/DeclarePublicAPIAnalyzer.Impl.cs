@@ -519,6 +519,13 @@ namespace PublicApiAnalyzer.ApiDesign
                     return false;
                 }
 
+                // We don't consider properties to be public APIs. Instead, property getters and setters
+                // (which are IMethodSymbols) are considered as public APIs.
+                if (symbol is IPropertySymbol)
+                {
+                    return false;
+                }
+
                 return this.IsPublicApiCore(symbol);
             }
 
