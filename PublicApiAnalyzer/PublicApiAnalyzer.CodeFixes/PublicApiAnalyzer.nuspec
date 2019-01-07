@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0"?>
 <package>
   <metadata minClientVersion="2.7">
-    <id>PublicApiAnalyzer</id>
+    <id>DotNetAnalyzers.PublicApiAnalyzer</id>
     <version>0.0.0</version>
     <title>Public API Analyzer</title>
     <authors>Sam Harwell et. al.</authors>
